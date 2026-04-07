@@ -1,0 +1,90 @@
+# ============================================================
+#  Gemma 4 — Docker Compose Deployment
+#  Includes: Ollama + Open WebUI (live cam + file attachment)
+#  Usage:  docker compose up -d
+#          then open http://localhost:8080
+# ============================================================
+
+version: "3.8"
+
+services:
+
+  # ── Ollama — Gemma 4 model runner ──────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: gemma4-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_KEEP_ALIVE=30m
+      - OLLAMA_MAX_LOADED_MODELS=1
+    # GPU support (comment out if no NVIDIA GPU)
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Model puller — pulls gemma4:e4b on first run ───────────
+  ollama-init:
+    image: ollama/ollama:latest
+    container_name: gemma4-init
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    # Change model here if needed: e2b | e4b | 26b | 31b
+    entrypoint: ["/bin/sh", "-c", "ollama pull gemma4:e4b && echo 'Gemma 4 e4b ready!'"]
+    restart: "no"
+
+  # ── Open WebUI — browser UI with cam + file support ────────
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: gemma4-webui
+    restart: unless-stopped
+    depends_on:
+      ollama:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    volumes:
+      - webui_data:/app/backend/data
+    environment:
+      # Connect to Ollama
+      - OLLAMA_BASE_URL=http://ollama:11434
+      # Enable all media/file features
+      - ENABLE_IMAGE_GENERATION=true
+      - ENABLE_COMMUNITY_SHARING=false
+      - WEBUI_AUTH=false             # set true to require login
+      - DEFAULT_MODELS=gemma4:e4b
+      - ENABLE_SIGNUP=true
+      # File upload settings
+      - MAX_FILE_SIZE=100            # MB
+      - MAX_FILE_COUNT=10
+      # RAG (file reading) settings
+      - RAG_EMBEDDING_ENGINE=ollama
+      - RAG_OLLAMA_BASE_URL=http://ollama:11434
+      # Camera / media
+      - ENABLE_WEBSOCKET_SUPPORT=true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  ollama_data:
+    driver: local
+  webui_data:
+    driver: local

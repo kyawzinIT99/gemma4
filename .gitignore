@@ -1,0 +1,22 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Secret/sensitive files
+.webui_secret_key
+*.key
+*.secret
+
+# Environment
+.env
+.venv/
+venv/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+logs/
