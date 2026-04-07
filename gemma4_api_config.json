@@ -1,0 +1,24 @@
+{
+  "gemma4_api_config": {
+    "description": "Gemma 4 local API \u2014 zero cost, fully private",
+    "model": "gemma4:e4b",
+    "openwebui_endpoint": {
+      "base_url": "http://localhost:3000/api",
+      "openai_compatible_url": "http://localhost:3000/openai",
+      "api_key": "not-configured",
+      "note": "Full Open WebUI features \u2014 chat, vision, file upload"
+    },
+    "ollama_direct_endpoint": {
+      "base_url": "http://localhost:11434",
+      "openai_compatible_url": "http://localhost:11434/v1",
+      "api_key": "sk-gemma4-6nZnTU6ZgbLwlWRfTwyZWDOPvvz21kjP",
+      "note": "Direct Ollama \u2014 fastest, no auth required by default"
+    },
+    "usage": {
+      "python_openai_sdk": "\nfrom openai import OpenAI\n\nclient = OpenAI(\n    base_url=\"http://localhost:11434/v1\",\n    api_key=\"ollama\",          # any string works for local Ollama\n)\n\nresponse = client.chat.completions.create(\n    model=\"gemma4:e4b\",\n    messages=[{\"role\": \"user\", \"content\": \"Hello!\"}]\n)\nprint(response.choices[0].message.content)\n",
+      "python_requests": "\nimport requests\n\nr = requests.post(\"http://localhost:11434/api/chat\", json={\n    \"model\": \"gemma4:e4b\",\n    \"messages\": [{\"role\": \"user\", \"content\": \"Hello!\"}],\n    \"stream\": False\n})\nprint(r.json()[\"message\"][\"content\"])\n",
+      "curl": "\ncurl http://localhost:11434/api/generate \\\n  -d '{\"model\": \"gemma4:e4b\", \"prompt\": \"Hello!\", \"stream\": false}'\n",
+      "javascript_fetch": "\nconst response = await fetch('http://localhost:11434/api/chat', {\n  method: 'POST',\n  headers: {'Content-Type': 'application/json'},\n  body: JSON.stringify({\n    model: 'gemma4:e4b',\n    messages: [{role: 'user', content: 'Hello!'}],\n    stream: false\n  })\n});\nconst data = await response.json();\nconsole.log(data.message.content);\n"
+    }
+  }
+}

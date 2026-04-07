@@ -9,6 +9,9 @@ __pycache__/
 *.key
 *.secret
 
+# Generated API config (contains local secret keys — never commit)
+gemma4_api_config.json
+
 # Environment
 .env
 .venv/

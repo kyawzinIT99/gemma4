@@ -185,6 +185,55 @@ print(response.message.content)
 
 ---
 
+## 🔑 API Key Generator
+
+Once Gemma 4 is running locally, use the included script to generate API credentials so any external app or script can connect to your local Gemma 4 instance.
+
+```bash
+python3 create_api_key.py
+```
+
+**What it does:**
+- ✅ Verifies Ollama + Gemma 4 are running
+- ✅ Creates an API key in Open WebUI (if configured)
+- ✅ Generates a direct Ollama bearer token
+- ✅ Saves a `gemma4_api_config.json` with ready-to-use code examples
+
+**Output includes code snippets for:**
+
+| Language | Method |
+|----------|--------|
+| Python | `openai` SDK (drop-in replacement) |
+| Python | `requests` library |
+| Shell | `curl` |
+| JavaScript | `fetch` API |
+
+> ⚠️ `gemma4_api_config.json` is generated **locally only** and is excluded from this repo (added to `.gitignore`) — your keys never leave your machine.
+
+**Quick test after running the script:**
+```bash
+curl http://localhost:11434/api/generate \
+  -d '{"model":"gemma4:e4b","prompt":"Hello!","stream":false}'
+```
+
+**Use with OpenAI SDK (zero code changes needed):**
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="http://localhost:11434/v1",
+    api_key="ollama",   # any string — local Ollama needs no real key
+)
+
+response = client.chat.completions.create(
+    model="gemma4:e4b",
+    messages=[{"role": "user", "content": "What can you see?"}]
+)
+print(response.choices[0].message.content)
+```
+
+---
+
 ## ☁️ Cloud Deployment (Modal)
 
 This repo also contains `main.py` for deploying the full stack to [Modal](https://modal.com) with a T4 GPU — useful for sharing a public endpoint.
@@ -206,10 +255,14 @@ gemma4/
 ├── setup.sh                   ← Automated installer (Ollama + Open WebUI)
 ├── launch_gemma4.sh           ← One-command launcher with auto browser open
 ├── gemma4_manager.sh          ← Interactive model manager (pull/update/delete)
+├── create_api_key.py          ← API key generator for local Gemma 4 access
 ├── docker-compose.yml         ← Full Docker stack definition
 ├── main.py                    ← Modal cloud deployment script
 ├── gemma4_info.md             ← Model variants and capabilities reference
 └── laptop_deployment_guide.md ← Detailed step-by-step experiment guide
+
+# Generated locally (git-ignored — never pushed):
+└── gemma4_api_config.json     ← Your local API keys + code examples
 ```
 
 ---
